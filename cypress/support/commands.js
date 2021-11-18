@@ -7,22 +7,22 @@ export const pickNRandom = (n, arr) =>
 // Decided to control this at test level because Commands.overwrite did not work well
 /** Simulates a call for a token to see if a user exists in the DB.
  * Assume that this is allowed to fail and can return with nothing */
-// Cypress.Commands.add(
-//   'getTokenResponse',
-//   (email, password) =>
-//     new Cypress.Promise((resolve) =>
-//       resolve(
-//         pickNRandom(1, [
-//           {
-//             body: {
-//               accessToken: `token-for-${email}-${password}`
-//             }
-//           },
-//           null
-//         ])[0]
-//       )
-//     )
-// )
+Cypress.Commands.add(
+  'getTokenResponse',
+  (email, password) =>
+    new Cypress.Promise((resolve) =>
+      resolve(
+        pickNRandom(1, [
+          {
+            body: {
+              accessToken: `token-for-${email}-${password}`
+            }
+          },
+          null
+        ])[0]
+      )
+    )
+)
 
 /** Simulates a call for a token, assume that this one is not allowed to fail */
 Cypress.Commands.add(

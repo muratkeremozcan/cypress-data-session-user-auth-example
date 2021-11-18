@@ -28,9 +28,9 @@ describe('should test the flow through the state chart', () => {
 
     // make init() return true - simulate that the user exists
     /** Simulates a call for a token to see if a user exists in the DB */
-    Cypress.Commands.add(
+    Cypress.Commands.overwrite(
       'getTokenResponse',
-      (email, password) =>
+      (getTokenResponse, email, password) =>
         new Cypress.Promise((resolve) =>
           resolve(
             pickNRandom(1, [
@@ -71,9 +71,9 @@ describe('should test the flow through the state chart', () => {
     it('Right Path: Existing user / validate() returns false: run validate() onInvalidated() preSetup() setup() ', () => {
       // make validate return false
       /** simulates a check for identity */
-      Cypress.Commands.add(
+      Cypress.Commands.overwrite(
         'me',
-        (accessToken, partialUser) =>
+        (me, accessToken, partialUser) =>
           new Cypress.Promise((resolve) => resolve(false))
       )
 
