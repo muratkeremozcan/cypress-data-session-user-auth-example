@@ -94,7 +94,10 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
     name: `${sessionName}`,
 
     init: () => {
-      cy.log('**init()** is there a token response for the email/pw combo?')
+      cy.log(
+        `**init()**: runs when there is nothing in cache. Yields the value to validate().
+        Check something for Ex: is there a token response for the email/pw combo?`
+      )
       return cy
         .getTokenResponse(partialUser.email, partialUser.password)
         .then((response) => {
@@ -120,12 +123,36 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
         })
     },
 
+    validate: (user) => {
+      cy.log(
+        `**validate()**: use a predicate to yield a Boolean value.
+        gets passed as an argument what is yielded from init()
+        Ex: determine if session data should be re-used by checking if the user exists
+        `
+      )
+      return cy.me(user.accessToken, user).then(Boolean)
+    },
+
+    onInvalidated: (user) => {
+      cy.log(
+        `**onInvalidated**: runs when validate() returns false. Calls preSetup() & setup()
+         gets passed as an argument what is yielded from init()'
+        `
+      )
+      cy.log('gets passed as an argument what is yielded from init()')
+      cy.wrap(user)
+    },
+
     preSetup: () => {
-      cy.log('**preSetup()**')
+      cy.log(
+        `**preSetup()**: prepares data for setup(). 
+        Nothing is passed to it as an arg, yields nothing to setup()`
+      )
     },
 
     setup: () => {
-      cy.log(`**setup()**: there is no user, create one as superadmin`)
+      cy.log(`**setup()**: setup function. Does not get anything passed to it.
+      There is no user, create one as superadmin`)
       return cy
         .maybeGetToken(
           'superadminSession',
@@ -137,22 +164,10 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
         )
     },
 
-    validate: (user) => {
-      cy.log(
-        `**validate()**:
-        determine if session data should be re-used, by checking if the user exists
-        if the user exists, then re-use the session data and skip setup
-        if not call preSetup & setup`
-      )
-      return cy.me(user.accessToken, user).then(Boolean)
-    },
-
-    onInvalidated: () => {
-      cy.log('**onInvalidated, should call setup**')
-    },
-
     recreate: () => {
-      cy.log(`**recreate()**: not used in this case`)
+      cy.log(
+        `**recreate()**: perform commands with the validated value to "finish" the recreation`
+      )
     },
 
     shareAcrossSpecs: true
