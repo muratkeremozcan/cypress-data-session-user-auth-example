@@ -28,7 +28,7 @@ The function utilizes `cypress-data-session` in order to:
 
   - it calls the `init` method, which might return a value _(ex: a token)_
     - if there is a value && passes `validate` callback _(ex: cy.me() returns truthy)_
-      - it cals `recreate`, saves the value in the data session and finishes
+      - it calls `recreate`, saves the value in the data session and finishes
     - else it needs to generate the real value and save it _(ex: cy.me() returns falsey, fails validate())_
       - it calls `onInvalidated`, `preSetup` and `setup` methods and saves the value
 

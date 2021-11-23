@@ -4,7 +4,6 @@ import { UserFactory } from './factories/user-factory'
 export const pickNRandom = (n, arr) =>
   arr.sort(() => Math.random() - Math.random()).slice(0, n)
 
-// Decided to control this at test level because Commands.overwrite did not work well
 /** Simulates a call for a token to see if a user exists in the DB.
  * Assume that this is allowed to fail and can return with nothing */
 Cypress.Commands.add(
@@ -77,14 +76,15 @@ Cypress.Commands.add('me', (accessToken, partialUser) =>
 - First, the code pulls cached data for the session name.
 
 - if there is no cached value:
-  - it calls the `init` method, which might return a value (ex: a token)
-    - if there is a value && passes `validate` callback (ex: cy.me() returns truthy)
-      - it saves the value in the data session and finishes
-    - else it needs to generate the real value and save it (ex: cy.me() returns falsey, fails validate())
-      - it calls `preSetup` and `setup` methods and saves the value
+
+  - it calls the `init` method, which might return a value _(ex: a token)_
+    - if there is a value && passes `validate` callback _(ex: cy.me() returns truthy)_
+      - it calls `recreate`, saves the value in the data session and finishes
+    - else it needs to generate the real value and save it _(ex: cy.me() returns falsey, fails validate())_
+      - it calls `onInvalidated`, `preSetup` and `setup` methods and saves the value
 
 - else (there is a cached value):
-  - it calls `validate` with the cached value 
+  - it calls `validate` with the cached value
     - if the `validate` returns `true`, the code calls `recreate` method
     - else it has to recompute the value, so it calls `onInvalidated`, `preSetup`, and `setup` methods
 */
@@ -96,41 +96,60 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
     init: () => {
       cy.log(
         `**init()**: runs when there is nothing in cache. Yields the value to validate().
-        Check something for Ex: is there a token response for the email/pw combo?`
+          Checks something, for ex: is there a token response for the email/pw combo?`
       )
       return cy
         .getTokenResponse(partialUser.email, partialUser.password)
         .then((response) => {
           if (response?.body.accessToken) {
-            cy.log(
-              `**there is a token response / a user exists in DB**
-               wrap a user with token and password
-               pass it through validate() - it should pass`
-            )
+            cy.log('init returns truthy')
 
-            cy.log('access token is')
-            cy.log(response.body)
+            cy.log(`access token is ${response.body}`)
 
             return cy
               .me(response.body.accessToken, partialUser)
               .then((user) => ({ ...user, password: partialUser.password }))
           }
-          cy.log(
-            `**there is no token response**,
-            pass it through validate() - it should fail`
-          )
+          cy.log('init returns falsey')
           return false
         })
     },
 
-    validate: (user) => {
+    validate: (maybeUser) => {
       cy.log(
-        `**validate()**: use a predicate to yield a Boolean value.
-        gets passed as an argument what is yielded from init()
-        Ex: determine if session data should be re-used by checking if the user exists
-        `
+        '**validate(maybeUser)**: gets passed what init() yields, or gets passed a cached value'
       )
-      return cy.me(user.accessToken, user).then(Boolean)
+      cy.log(`maybeUser is ${maybeUser}`)
+      cy.me(maybeUser.accessToken, maybeUser)
+        .then((user) => user)
+        // .then(console.log)
+        // .then(Boolean)
+        .then(console.log)
+      return cy.me(maybeUser.accessToken, maybeUser).then(Boolean)
+    },
+
+    preSetup: () => {
+      cy.log(`**preSetup()**: prepares data for setup function(). 
+      Does not get anything passed to it.
+      For example: see if we can get a token before creating a user in setup()`)
+      return cy.maybeGetToken(
+        'superadminSession',
+        'SUPERADMIN_EMAIL',
+        'SUPERADMIN_PASSWORD'
+      )
+    },
+
+    setup: (superadminToken) => {
+      cy.log(`**setup()**: there is no user, create one as superadmin`)
+      return cy.createUserWithToken(superadminToken, partialUser)
+    },
+
+    recreate: (user) => {
+      cy.log(
+        '**recreate()**: gets passed what validate() yields if validate is successful'
+      )
+      cy.log('recreated user is', user)
+      return Promise.resolve(user)
     },
 
     onInvalidated: (user) => {
@@ -139,35 +158,7 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
          gets passed as an argument what is yielded from init()'
         `
       )
-      cy.log('gets passed as an argument what is yielded from init()')
       cy.wrap(user)
-    },
-
-    preSetup: () => {
-      cy.log(
-        `**preSetup()**: prepares data for setup(). 
-        Nothing is passed to it as an arg, yields nothing to setup()`
-      )
-    },
-
-    setup: () => {
-      cy.log(`**setup()**: setup function. Does not get anything passed to it.
-      There is no user, create one as superadmin`)
-      return cy
-        .maybeGetToken(
-          'superadminSession',
-          'SUPERADMIN_EMAIL',
-          'SUPERADMIN_PASSWORD'
-        )
-        .then((superadminToken) =>
-          cy.createUserWithToken(superadminToken, partialUser)
-        )
-    },
-
-    recreate: () => {
-      cy.log(
-        `**recreate()**: perform commands with the validated value to "finish" the recreation`
-      )
     },
 
     shareAcrossSpecs: true
