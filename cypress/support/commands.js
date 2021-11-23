@@ -54,7 +54,7 @@ Cypress.Commands.add('maybeGetToken', (sessionName, email, password) =>
   cy.dataSession({
     name: `${sessionName}Token`,
     setup: () => {
-      cy.log('**called setup**')
+      cy.log('**called setup for maybeGetToken**')
       return cy.getToken(email, password)
     },
     // if validate is true, get the token from cypress-data-session and skip setup
@@ -121,7 +121,10 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
       )
       cy.log(`maybeUser is ${maybeUser}`)
 
-      return cy.me(maybeUser.accessToken, maybeUser).then(Boolean)
+      return cy
+        .me(maybeUser.accessToken, maybeUser)
+        .then((resp) => resp.id != null)
+        .then(Boolean)
     },
 
     preSetup: () => {
@@ -136,13 +139,14 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
     },
 
     setup: (superadminToken) => {
-      cy.log(`**setup()**: there is no user, create one as superadmin`)
+      cy.log(`**setup()**: there is no user, create one as superadmin.
+      Gets passed in what is yielded from preSetup()`)
       return cy.createUserWithToken(superadminToken, partialUser)
     },
 
     recreate: (user) => {
       cy.log(
-        '**recreate()**: gets passed what validate() yields if validate is successful'
+        `**recreate()**: gets passed what validate() yields if validate is successful`
       )
       cy.log('recreated user is', user)
       return Promise.resolve(user)
@@ -155,6 +159,7 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
         With it you can clear user session for example.'
         `
       )
+      // Cypress.clearDataSessions()
     },
 
     shareAcrossSpecs: true

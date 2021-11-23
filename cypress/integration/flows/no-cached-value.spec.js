@@ -24,12 +24,14 @@ describe('No Cached value, always calls init() first', () => {
   }
 
   beforeEach(() => {
-    Cypress.clearDataSession('adminSession')
-    Cypress.clearDataSession('userSession')
+    Cypress.clearDataSession('adminSession-no-cache')
+    Cypress.clearDataSession('userSession-no-cache')
   })
 
   it('Existing user / validate() returns true: should run init() validate() recreate()', () => {
-    cy.log('make validate() return true')
+    let sessionToken
+
+    cy.log('make init() return true - simulate that the user exists')
     /** Simulates a call for a token to see if a user exists in the DB */
     Cypress.Commands.overwrite(
       'getTokenResponse',
@@ -48,16 +50,13 @@ describe('No Cached value, always calls init() first', () => {
         )
     )
 
-    let sessionToken
-
-    cy.maybeGetTokenAndUser('adminSession', admin).then((user) => {
+    cy.maybeGetTokenAndUser('adminSession-no-cache', admin).then((user) => {
       genericAssertions(user)
       sessionToken = user.accessToken
     })
 
-    cy.maybeGetTokenAndUser('adminSession', admin).then((user) => {
-      expect(user.email).to.be.a('string')
-      expect(user.accessToken).to.eq(`token-for-${user.email}-${user.password}`)
+    cy.maybeGetTokenAndUser('adminSession-no-cache', admin).then((user) => {
+      genericAssertions(user)
       expect(
         user.accessToken,
         'access token acquired should be from the session'
@@ -66,6 +65,27 @@ describe('No Cached value, always calls init() first', () => {
   })
 
   it('New user / validate() returns false: should run init() validate() preSetup() setup()', () => {
+    let sessionToken
+
+    cy.log('make init() return false - simulate that the user does not exist')
+    /** Simulates a call for a token to see if a user exists in the DB */
+    Cypress.Commands.overwrite(
+      'getTokenResponse',
+      (getTokenResponse, email, password) =>
+        new Cypress.Promise((resolve) =>
+          resolve(
+            pickNRandom(1, [
+              //  {
+              //    body: {
+              //      accessToken: `token-for-${email}-${password}`
+              //    }
+              //  }
+              null
+            ])[0]
+          )
+        )
+    )
+
     cy.log('make validate() return false')
     /** simulates a check for identity */
     Cypress.Commands.overwrite(
@@ -74,16 +94,13 @@ describe('No Cached value, always calls init() first', () => {
         new Cypress.Promise((resolve) => resolve(false))
     )
 
-    let sessionToken
-
-    cy.maybeGetTokenAndUser('userSession', newUser).then((user) => {
+    cy.maybeGetTokenAndUser('userSession-no-cache', newUser).then((user) => {
       genericAssertions(user)
       sessionToken = user.accessToken
     })
 
-    cy.maybeGetTokenAndUser('userSession', newUser).then((user) => {
-      expect(user.email).to.be.a('string')
-      expect(user.accessToken).to.eq(`token-for-${user.email}-${user.password}`)
+    cy.maybeGetTokenAndUser('userSession-no-cache', newUser).then((user) => {
+      genericAssertions(user)
       expect(
         user.accessToken,
         'access token acquired should be from the session'
