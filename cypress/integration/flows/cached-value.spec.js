@@ -13,26 +13,25 @@ describe('Cached value', () => {
 
   let sessionToken
 
-  // make init() return true - simulate that the user exists
-  /** Simulates a call for a token to see if a user exists in the DB */
-  Cypress.Commands.overwrite(
-    'getTokenResponse',
-    (getTokenResponse, email, password) =>
-      new Cypress.Promise((resolve) =>
-        resolve(
-          pickNRandom(1, [
-            {
-              body: {
-                accessToken: `token-for-${email}-${password}`
-              }
-            }
-            // null
-          ])[0]
-        )
-      )
-  )
-
   beforeEach(() => {
+    // make init() return true - simulate that the user exists
+    /** Simulates a call for a token to see if a user exists in the DB */
+    Cypress.Commands.overwrite(
+      'getTokenResponse',
+      (getTokenResponse, email, password) =>
+        new Cypress.Promise((resolve) =>
+          resolve(
+            pickNRandom(1, [
+              {
+                body: {
+                  accessToken: `token-for-${email}-${password}`
+                }
+              }
+              // null
+            ])[0]
+          )
+        )
+    )
     cy.log('run the function once so that the value is cached')
     cy.maybeGetTokenAndUser('adminSession', admin).then((user) => {
       expect(user.email).to.be.a('string')
