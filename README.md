@@ -37,7 +37,18 @@ The function utilizes `cypress-data-session` in order to:
     - if the `validate` returns `true`, the code calls `recreate` method
     - else it has to recompute the value, so it calls `onInvalidated`, `preSetup`, and `setup` methods
 
-## Flowchart
+## Test 1 Flowchart - cached value
+
+<!-- ![Flowchart](images/cached-value.png) -->
+<img src="images/cached-value.png" width="300">
+
+## Test 2 Flowchart - no cached value
+
+<!-- ![Flowchart](images/no-cached-value.png) -->
+<img src="images/no-cached-value.png" width="300">
+
+<details>
+  <summary>Flowchart source</summary>
 
 <!--
 Mermaid charts can be previewed using VSCode extension
@@ -45,11 +56,6 @@ Name: Markdown Preview Mermaid Support
 Id: bierner.markdown-mermaid
 VS Marketplace Link: https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid
 -->
-
-![Flowchart](images/flowchart.png)
-
-<details>
-  <summary>Flowchart source</summary>
 
 ```mermaid
 flowchart TD

@@ -120,11 +120,7 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
         '**validate(maybeUser)**: gets passed what init() yields, or gets passed a cached value'
       )
       cy.log(`maybeUser is ${maybeUser}`)
-      cy.me(maybeUser.accessToken, maybeUser)
-        .then((user) => user)
-        // .then(console.log)
-        // .then(Boolean)
-        .then(console.log)
+
       return cy.me(maybeUser.accessToken, maybeUser).then(Boolean)
     },
 
@@ -154,11 +150,11 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
 
     onInvalidated: (user) => {
       cy.log(
-        `**onInvalidated**: runs when validate() returns false. Calls preSetup() & setup()
-         gets passed as an argument what is yielded from init()'
+        `**onInvalidated**: runs when validate() returns false.
+        Will be called before the "setup" function executes.
+        With it you can clear user session for example.'
         `
       )
-      cy.wrap(user)
     },
 
     shareAcrossSpecs: true
