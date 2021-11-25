@@ -89,6 +89,24 @@ Cypress.Commands.add('me', (accessToken, partialUser) =>
     - else it has to recompute the value, so it calls `onInvalidated`, `preSetup`, and `setup` methods
 */
 
+/** Decorates the user with a password */
+const addPasswordToUser = (accessToken, partialUser) =>
+  cy
+    .me(accessToken)
+    .then((user) => ({ ...user, password: partialUser.password }))
+
+/** Checks that there is a token response for a user.
+ * If there is a response, decorates the user with a password
+ * Else, returns false */
+const checkUser = (partialUser) =>
+  cy
+    .getTokenResponse(partialUser.email, partialUser.password)
+    .then((response) =>
+      response?.body.accessToken
+        ? addPasswordToUser(response.body.accessToken, partialUser)
+        : false
+    )
+
 Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
   cy.dataSession({
     name: `${sessionName}`,
@@ -98,21 +116,7 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
         `**init()**: runs when there is nothing in cache. Yields the value to validate().
           Checks something, for ex: is there a token response for the email/pw combo?`
       )
-      return cy
-        .getTokenResponse(partialUser.email, partialUser.password)
-        .then((response) => {
-          if (response?.body.accessToken) {
-            cy.log('init returns truthy')
-
-            cy.log(`access token is ${response.body}`)
-
-            return cy
-              .me(response.body.accessToken, partialUser)
-              .then((user) => ({ ...user, password: partialUser.password }))
-          }
-          cy.log('init returns falsey')
-          return false
-        })
+      return checkUser(partialUser)
     },
 
     validate: (maybeUser) => {
@@ -159,7 +163,7 @@ Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
         With it you can clear user session for example.'
         `
       )
-      // Cypress.clearDataSessions()
+      // Cypress.clearDataSessions() // if you needed to, this is where you would clear the session
     },
 
     shareAcrossSpecs: true
