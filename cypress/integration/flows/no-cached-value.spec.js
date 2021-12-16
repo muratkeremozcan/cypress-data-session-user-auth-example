@@ -50,12 +50,20 @@ describe('No Cached value, always calls init() first', () => {
         )
     )
 
-    cy.maybeGetTokenAndUser('adminSession-no-cache', admin).then((user) => {
+    cy.maybeGetTokenAndUser(
+      'adminSession-no-cache',
+      admin,
+      'getTokenResponse'
+    ).then((user) => {
       genericAssertions(user)
       sessionToken = user.accessToken
     })
 
-    cy.maybeGetTokenAndUser('adminSession-no-cache', admin).then((user) => {
+    cy.maybeGetTokenAndUser(
+      'adminSession-no-cache',
+      admin,
+      'getTokenResponse'
+    ).then((user) => {
       genericAssertions(user)
       expect(
         user.accessToken,
@@ -94,12 +102,20 @@ describe('No Cached value, always calls init() first', () => {
         new Cypress.Promise((resolve) => resolve(false))
     )
 
-    cy.maybeGetTokenAndUser('userSession-no-cache', newUser).then((user) => {
+    cy.maybeGetTokenAndUser(
+      'userSession-no-cache',
+      newUser,
+      'getTokenResponse'
+    ).then((user) => {
       genericAssertions(user)
       sessionToken = user.accessToken
     })
 
-    cy.maybeGetTokenAndUser('userSession-no-cache', newUser).then((user) => {
+    cy.maybeGetTokenAndUser(
+      'userSession-no-cache',
+      newUser,
+      'getTokenResponse'
+    ).then((user) => {
       genericAssertions(user)
       expect(
         user.accessToken,

@@ -47,12 +47,20 @@ describe('Cached value', () => {
 
     cy.log('run the function once so that the value is cached')
 
-    cy.maybeGetTokenAndUser('adminSession-cache', admin).then((user) => {
+    cy.maybeGetTokenAndUser(
+      'adminSession-cache',
+      admin,
+      'getTokenResponse'
+    ).then((user) => {
       genericAssertions(user)
       sessionToken = user.accessToken
     })
 
-    cy.maybeGetTokenAndUser('adminSession-cache', admin).then((user) => {
+    cy.maybeGetTokenAndUser(
+      'adminSession-cache',
+      admin,
+      'getTokenResponse'
+    ).then((user) => {
       genericAssertions(user)
       expect(
         user.accessToken,
@@ -91,12 +99,20 @@ describe('Cached value', () => {
         new Cypress.Promise((resolve) => resolve(false))
     )
 
-    cy.maybeGetTokenAndUser('userSession-cache', newUser).then((user) => {
+    cy.maybeGetTokenAndUser(
+      'userSession-cache',
+      newUser,
+      'getTokenResponse'
+    ).then((user) => {
       genericAssertions(user)
       sessionToken = user.accessToken
     })
 
-    cy.maybeGetTokenAndUser('userSession-cache', newUser).then((user) => {
+    cy.maybeGetTokenAndUser(
+      'userSession-cache',
+      newUser,
+      'getTokenResponse'
+    ).then((user) => {
       genericAssertions(user)
       expect(
         user.accessToken,

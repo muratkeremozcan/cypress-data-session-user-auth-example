@@ -89,79 +89,83 @@ Cypress.Commands.add('me', (accessToken, partialUser) =>
     - else it has to recompute the value, so it calls `onInvalidated`, `preSetup`, and `setup` methods
 */
 
-Cypress.Commands.add('maybeGetTokenAndUser', (sessionName, partialUser) =>
-  cy.dataSession({
-    name: `${sessionName}`,
+Cypress.Commands.add(
+  'maybeGetTokenAndUser',
+  (sessionName, partialUser, parentSession) =>
+    cy.dataSession({
+      name: `${sessionName}`,
 
-    init: () => {
-      cy.log(
-        `**init()**: runs when there is nothing in cache. Yields the value to validate().
+      dependsOn: parentSession,
+
+      init: () => {
+        cy.log(
+          `**init()**: runs when there is nothing in cache. Yields the value to validate().
           Checks something, for ex: is there a token response for the email/pw combo?`
-      )
-      return cy
-        .getTokenResponse(partialUser.email, partialUser.password)
-        .then((response) => {
-          if (response?.body.accessToken) {
-            cy.log('init returns truthy')
+        )
+        return cy
+          .getTokenResponse(partialUser.email, partialUser.password)
+          .then((response) => {
+            if (response?.body.accessToken) {
+              cy.log('init returns truthy')
 
-            cy.log(`access token is ${response.body}`)
+              cy.log(`access token is ${response.body}`)
 
-            return cy
-              .me(response.body.accessToken, partialUser)
-              .then((user) => ({ ...user, password: partialUser.password }))
-          }
-          cy.log('init returns falsey')
-          return false
-        })
-    },
+              return cy
+                .me(response.body.accessToken, partialUser)
+                .then((user) => ({ ...user, password: partialUser.password }))
+            }
+            cy.log('init returns falsey')
+            return false
+          })
+      },
 
-    validate: (maybeUser) => {
-      cy.log(
-        '**validate(maybeUser)**: gets passed what init() yields, or gets passed a cached value'
-      )
-      cy.log(`maybeUser is ${maybeUser}`)
+      validate: (maybeUser) => {
+        cy.log(
+          '**validate(maybeUser)**: gets passed what init() yields, or gets passed a cached value'
+        )
+        cy.log(`maybeUser is ${maybeUser}`)
 
-      return cy
-        .me(maybeUser.accessToken, maybeUser)
-        .then((resp) => resp.id != null)
-        .then(Boolean)
-    },
+        return cy
+          .me(maybeUser.accessToken, maybeUser)
+          .then((resp) => resp.id != null)
+          .then(Boolean)
+      },
 
-    preSetup: () => {
-      cy.log(`**preSetup()**: prepares data for setup function(). 
+      preSetup: () => {
+        cy.log(`**preSetup()**: prepares data for setup function(). 
       Does not get anything passed to it.
       For example: see if we can get a token before creating a user in setup()`)
-      return cy.maybeGetToken(
-        'superadminSession',
-        'SUPERADMIN_EMAIL',
-        'SUPERADMIN_PASSWORD'
-      )
-    },
+        return cy.maybeGetToken(
+          'superadminSession',
+          'SUPERADMIN_EMAIL',
+          'SUPERADMIN_PASSWORD'
+        )
+      },
 
-    setup: (superadminToken) => {
-      cy.log(`**setup()**: there is no user, create one as superadmin.
+      setup: (superadminToken) => {
+        cy.log(`**setup()**: there is no user, create one as superadmin.
       Gets passed in what is yielded from preSetup()`)
-      return cy.createUserWithToken(superadminToken, partialUser)
-    },
+        return cy.createUserWithToken(superadminToken, partialUser)
+      },
 
-    recreate: (user) => {
-      cy.log(
-        `**recreate()**: gets passed what validate() yields if validate is successful`
-      )
-      cy.log('recreated user is', user)
-      return Promise.resolve(user)
-    },
+      recreate: (user) => {
+        cy.log(
+          `**recreate()**: gets passed what validate() yields if validate is successful`
+        )
+        cy.log('recreated user is', user)
+        return Promise.resolve(user)
+      },
 
-    onInvalidated: (user) => {
-      cy.log(
-        `**onInvalidated**: runs when validate() returns false.
+      onInvalidated: (user) => {
+        cy.log(
+          `**onInvalidated**: runs when validate() returns false.
         Will be called before the "setup" function executes.
         With it you can clear user session for example.'
         `
-      )
-      // Cypress.clearDataSessions()
-    },
+        )
+        // Cypress.clearDataSessions()
+      },
 
-    shareAcrossSpecs: true
-  })
+      shareAcrossSpecs: true
+    })
 )
