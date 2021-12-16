@@ -50,9 +50,9 @@ Cypress.Commands.add('createUserWithToken', (accessToken, partialUser) =>
 )
 
 /** Always attempts to grab the token from data session at first, if not in session only then asks for the token */
-Cypress.Commands.add('maybeGetToken', (sessionName, email, password) =>
+Cypress.Commands.add('maybeGetToken', (email, password, sessionName) =>
   cy.dataSession({
-    name: `${sessionName}Token`,
+    name: `${sessionName}`,
     setup: () => {
       cy.log('**called setup for maybeGetToken**')
       return cy.getToken(email, password)
@@ -91,11 +91,11 @@ Cypress.Commands.add('me', (accessToken, partialUser) =>
 
 Cypress.Commands.add(
   'maybeGetTokenAndUser',
-  (sessionName, partialUser, parentSession) =>
+  (partialUser, sessionName, parentSessionName) =>
     cy.dataSession({
       name: `${sessionName}`,
 
-      dependsOn: parentSession,
+      dependsOn: parentSessionName,
 
       init: () => {
         cy.log(
