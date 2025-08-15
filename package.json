@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/muratkeremozcan/cypress-data-session-statechart#readme",
   "devDependencies": {
-    "cypress": "^9.0.0",
+    "cypress": "^14.0.0",
     "cypress-data-session": "^1.13.2",
     "faker": "^5.5.3",
     "fishery": "^2.1.0",
