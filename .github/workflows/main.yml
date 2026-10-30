@@ -11,7 +11,7 @@ jobs:
 
       # https://github.com/cypress-io/github-action
       - name: Run Cypress tests 🧪
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v7.4.8
         with:
           start: 'npm start'
           browser: chrome
