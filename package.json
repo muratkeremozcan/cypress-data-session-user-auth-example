@@ -23,6 +23,6 @@
     "cypress-data-session": "^1.13.2",
     "faker": "^5.5.3",
     "fishery": "^2.1.0",
-    "prettier": "^2.4.1"
+    "prettier": "^3.0.0"
   }
 }
